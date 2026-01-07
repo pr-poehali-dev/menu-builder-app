@@ -38,6 +38,12 @@ const RecipeCard = ({ recipe, onClick, onFavorite, isFavorite, matchBadge }: Rec
         </div>
         <div className="flex gap-2 flex-wrap mb-2">
           {matchBadge}
+          {recipe.regional && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 text-xs">
+              <Icon name="MapPin" className="w-3 h-3 mr-1" />
+              {recipe.regional}
+            </Badge>
+          )}
           <Badge variant="secondary" className="text-xs">
             <Icon name="Clock" className="w-3 h-3 mr-1" />
             {recipe.time} мин
