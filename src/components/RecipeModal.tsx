@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,42 @@ type RecipeModalProps = {
 };
 
 const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily }: RecipeModalProps) => {
+  const [activeTimer, setActiveTimer] = useState<number | null>(null);
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+
+  useEffect(() => {
+    if (activeTimer === null || remainingTime <= 0) return;
+
+    const interval = setInterval(() => {
+      setRemainingTime((prev) => {
+        if (prev <= 1) {
+          setActiveTimer(null);
+          if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeTimer, remainingTime]);
+
+  const startTimer = (stepIndex: number, seconds: number) => {
+    setActiveTimer(stepIndex);
+    setRemainingTime(seconds);
+  };
+
+  const stopTimer = () => {
+    setActiveTimer(null);
+    setRemainingTime(0);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   if (!recipe) return null;
 
   return (
@@ -82,14 +119,39 @@ const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily }: RecipeModal
           <div>
             <h3 className="font-heading font-semibold text-lg mb-3">Приготовление</h3>
             <ol className="space-y-3">
-              {recipe.steps.map((step, idx) => (
-                <li key={idx} className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center text-xs font-bold">
-                    {idx + 1}
-                  </div>
-                  <p className="text-sm flex-1">{step}</p>
-                </li>
-              ))}
+              {recipe.steps.map((step, idx) => {
+                const stepData = typeof step === 'string' ? { text: step } : step;
+                const hasTimer = stepData.timer && stepData.timer > 0;
+                const isTimerActive = activeTimer === idx;
+                
+                return (
+                  <li key={idx} className="flex gap-3 items-start">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center text-xs font-bold">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm mb-2">{stepData.text}</p>
+                      {hasTimer && (
+                        <Button
+                          size="sm"
+                          variant={isTimerActive ? "default" : "outline"}
+                          className={`text-xs ${isTimerActive ? 'bg-gradient-to-r from-primary to-secondary' : ''}`}
+                          onClick={() => {
+                            if (isTimerActive) {
+                              stopTimer();
+                            } else {
+                              startTimer(idx, stepData.timer!);
+                            }
+                          }}
+                        >
+                          <Icon name={isTimerActive ? "Pause" : "Timer"} className="w-3 h-3 mr-1" />
+                          {isTimerActive ? formatTime(remainingTime) : `${Math.floor(stepData.timer! / 60)}:${(stepData.timer! % 60).toString().padStart(2, '0')}`}
+                        </Button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ol>
           </div>
 
