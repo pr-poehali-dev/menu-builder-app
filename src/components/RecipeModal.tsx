@@ -16,9 +16,10 @@ type RecipeModalProps = {
   ingredients: UserIngredient[];
   onClose: () => void;
   onAddToDaily: (recipe: Recipe) => void;
+  onAddToCalendar?: (recipeId: string, recipeName: string, date: string, time: 'breakfast' | 'lunch' | 'dinner' | 'snack') => void;
 };
 
-const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily }: RecipeModalProps) => {
+const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily, onAddToCalendar }: RecipeModalProps) => {
   const [activeTimer, setActiveTimer] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<number>(0);
 

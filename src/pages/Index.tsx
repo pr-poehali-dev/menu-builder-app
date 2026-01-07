@@ -1,15 +1,21 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { recipes, type Recipe, type RecipeCategory } from '@/lib/recipes-data';
-import { ingredientsPrices, regions, type Region } from '@/lib/ingredients-data';
+import { ingredientsPrices, regions, type Region, type Allergen } from '@/lib/ingredients-data';
+import { type Budget, getDefaultBudget } from '@/lib/budget-data';
+import { type DietMode, dietModes } from '@/lib/diet-modes';
+import { type CalendarMeal, type Reminder, generateWeekDates, defaultMealTimes, type MealTime } from '@/lib/calendar-data';
 import IngredientsTab from '@/components/IngredientsTab';
 import RecipesTab from '@/components/RecipesTab';
 import CaloriesTab from '@/components/CaloriesTab';
 import RecipeModal from '@/components/RecipeModal';
 import RecipeCard from '@/components/RecipeCard';
+import BudgetTab from '@/components/BudgetTab';
+import CalendarTab from '@/components/CalendarTab';
+import SettingsTab from '@/components/SettingsTab';
 
 type UserIngredient = {
   id: string;
@@ -33,6 +39,46 @@ const Index = () => {
   const [dailyCarbs, setDailyCarbs] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<RecipeCategory | 'все'>('все');
+  
+  const [budget, setBudget] = useState<Budget>(getDefaultBudget());
+  const [excludedAllergens, setExcludedAllergens] = useState<Allergen[]>([]);
+  const [dietMode, setDietMode] = useState<DietMode>('standard');
+  const [calendarMeals, setCalendarMeals] = useState<CalendarMeal[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+  
+  useEffect(() => {
+    const savedBudget = localStorage.getItem('budget');
+    const savedAllergens = localStorage.getItem('excludedAllergens');
+    const savedMode = localStorage.getItem('dietMode');
+    const savedMeals = localStorage.getItem('calendarMeals');
+    const savedReminders = localStorage.getItem('reminders');
+    
+    if (savedBudget) setBudget(JSON.parse(savedBudget));
+    if (savedAllergens) setExcludedAllergens(JSON.parse(savedAllergens));
+    if (savedMode) setDietMode(savedMode as DietMode);
+    if (savedMeals) setCalendarMeals(JSON.parse(savedMeals));
+    if (savedReminders) setReminders(JSON.parse(savedReminders));
+  }, []);
+  
+  useEffect(() => {
+    localStorage.setItem('budget', JSON.stringify(budget));
+  }, [budget]);
+  
+  useEffect(() => {
+    localStorage.setItem('excludedAllergens', JSON.stringify(excludedAllergens));
+  }, [excludedAllergens]);
+  
+  useEffect(() => {
+    localStorage.setItem('dietMode', dietMode);
+  }, [dietMode]);
+  
+  useEffect(() => {
+    localStorage.setItem('calendarMeals', JSON.stringify(calendarMeals));
+  }, [calendarMeals]);
+  
+  useEffect(() => {
+    localStorage.setItem('reminders', JSON.stringify(reminders));
+  }, [reminders]);
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
@@ -42,15 +88,63 @@ const Index = () => {
         ingredientName.includes(p.name.toLowerCase())
       );
       
+      const price = priceData ? priceData.prices[region] : 0;
+      
       const ingredient: UserIngredient = {
         id: Date.now().toString(),
         name: newIngredient,
-        price: priceData ? priceData.prices[region] : 0,
+        price,
         unit: priceData ? priceData.unit : '',
       };
       setIngredients([...ingredients, ingredient]);
+      setBudget(prev => ({ ...prev, spent: prev.spent + price }));
       setNewIngredient('');
     }
+  };
+  
+  const addMealToCalendar = (recipeId: string, recipeName: string, date: string, time: MealTime) => {
+    const newMeal: CalendarMeal = {
+      id: Date.now().toString(),
+      date,
+      time,
+      recipeId,
+      recipeName,
+      completed: false
+    };
+    setCalendarMeals([...calendarMeals, newMeal]);
+  };
+  
+  const toggleMealCompletion = (mealId: string) => {
+    setCalendarMeals(prev => prev.map(meal => 
+      meal.id === mealId ? { ...meal, completed: !meal.completed } : meal
+    ));
+  };
+  
+  const removeMealFromCalendar = (mealId: string) => {
+    setCalendarMeals(prev => prev.filter(meal => meal.id !== mealId));
+  };
+  
+  const addReminder = (title: string, date: string, time: string, type: 'meal' | 'workout' | 'custom', recipeId?: string) => {
+    const newReminder: Reminder = {
+      id: Date.now().toString(),
+      date,
+      time,
+      title,
+      type,
+      enabled: true,
+      recipeId
+    };
+    setReminders([...reminders, newReminder]);
+  };
+  
+  const toggleReminder = (reminderId: string) => {
+    setReminders(prev => prev.map(r => 
+      r.id === reminderId ? { ...r, enabled: !r.enabled } : r
+    ));
+  };
+  
+  const removeReminder = (reminderId: string) => {
+    setReminders(prev => prev.filter(r => r.id !== reminderId));
   };
 
   const removeIngredient = (id: string) => {
@@ -98,6 +192,35 @@ const Index = () => {
   const filteredRecipes = useMemo(() => {
     let filtered = recipes;
     
+    const modeConfig = dietModes[dietMode];
+    if (dietMode === 'express') {
+      filtered = filtered.filter(r => r.time <= 30);
+    }
+    if (modeConfig.maxComplexity < 5) {
+      filtered = filtered.filter(r => r.complexity <= modeConfig.maxComplexity);
+    }
+    if (dietMode === 'weight_loss') {
+      filtered = filtered.filter(r => r.calories <= 400);
+    }
+    
+    if (excludedAllergens.length > 0) {
+      filtered = filtered.filter(recipe => {
+        const recipeAllergens = new Set<Allergen>();
+        
+        recipe.ingredients.forEach(ing => {
+          const ingData = ingredientsPrices.find(p => 
+            p.name.toLowerCase() === ing.toLowerCase() || 
+            ing.toLowerCase().includes(p.name.toLowerCase())
+          );
+          if (ingData?.allergens) {
+            ingData.allergens.forEach(a => recipeAllergens.add(a));
+          }
+        });
+        
+        return !excludedAllergens.some(allergen => recipeAllergens.has(allergen));
+      });
+    }
+    
     if (selectedCategory !== 'все') {
       filtered = filtered.filter(r => r.category === selectedCategory);
     }
@@ -112,7 +235,7 @@ const Index = () => {
     }
     
     return filtered;
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, dietMode, excludedAllergens]);
 
   const sortedRecipes = useMemo(() => {
     return [...filteredRecipes].sort((a, b) => {
@@ -137,10 +260,11 @@ const Index = () => {
     [sortedRecipes, ingredients]
   );
 
-  const dailyCaloriesGoal = 2000;
-  const dailyProteinGoal = 150;
-  const dailyFatsGoal = 70;
-  const dailyCarbsGoal = 250;
+  const modeGoals = dietModes[dietMode];
+  const dailyCaloriesGoal = modeGoals.caloriesGoal;
+  const dailyProteinGoal = modeGoals.proteinGoal;
+  const dailyFatsGoal = modeGoals.fatsGoal;
+  const dailyCarbsGoal = modeGoals.carbsGoal;
 
   const getTotalPrice = () => {
     return ingredients.reduce((sum, ing) => sum + ing.price, 0);
@@ -176,23 +300,25 @@ const Index = () => {
           </div>
         </Card>
 
-        <Tabs defaultValue="ingredients" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 bg-white/95 backdrop-blur-sm shadow-sm border border-orange-200">
-            <TabsTrigger value="ingredients" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
-              <Icon name="ShoppingBasket" className="w-4 h-4 mr-1" />
-              Продукты
+        <Tabs defaultValue="recipes" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-6 bg-white/95 backdrop-blur-sm shadow-sm border border-orange-200 gap-1">
+            <TabsTrigger value="recipes" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="ChefHat" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="recipes" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
-              <Icon name="ChefHat" className="w-4 h-4 mr-1" />
-              Рецепты
+            <TabsTrigger value="calendar" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="Calendar" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="calories" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
-              <Icon name="Activity" className="w-4 h-4 mr-1" />
-              Калории
+            <TabsTrigger value="ingredients" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="ShoppingBasket" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="favorites" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
-              <Icon name="Heart" className="w-4 h-4 mr-1" />
-              Избранное
+            <TabsTrigger value="budget" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="Wallet" className="w-3 h-3" />
+            </TabsTrigger>
+            <TabsTrigger value="favorites" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="Heart" className="w-3 h-3" />
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+              <Icon name="Settings" className="w-3 h-3" />
             </TabsTrigger>
           </TabsList>
 
@@ -241,6 +367,38 @@ const Index = () => {
             />
           </TabsContent>
 
+          <TabsContent value="budget">
+            <BudgetTab
+              budget={budget}
+              setBudget={setBudget}
+              currentSpent={getTotalPrice()}
+            />
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <CalendarTab
+              meals={calendarMeals}
+              reminders={reminders}
+              recipes={recipes}
+              addMeal={addMealToCalendar}
+              toggleMealCompletion={toggleMealCompletion}
+              removeMeal={removeMealFromCalendar}
+              addReminder={addReminder}
+              toggleReminder={toggleReminder}
+              removeReminder={removeReminder}
+              onSelectRecipe={setSelectedRecipe}
+            />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsTab
+              dietMode={dietMode}
+              setDietMode={setDietMode}
+              excludedAllergens={excludedAllergens}
+              setExcludedAllergens={setExcludedAllergens}
+            />
+          </TabsContent>
+
           <TabsContent value="favorites" className="space-y-3">
             {favorites.length === 0 ? (
               <Card className="p-8 text-center bg-white/90 backdrop-blur-sm border-orange-200">
@@ -270,6 +428,7 @@ const Index = () => {
         ingredients={ingredients}
         onClose={() => setSelectedRecipe(null)}
         onAddToDaily={addRecipeToDaily}
+        onAddToCalendar={addMealToCalendar}
       />
     </div>
   );

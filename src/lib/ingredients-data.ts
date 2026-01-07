@@ -9,6 +9,8 @@ export type Region =
   | 'sochi' | 'stavropol' | 'belgorod' | 'arkhangelsk' | 'vladimir' | 'surgut' 
   | 'smolensk' | 'kaluga' | 'chita' | 'oryol' | 'yakutsk' | 'murmansk';
 
+export type Allergen = 'глютен' | 'лактоза' | 'яйца' | 'орехи' | 'морепродукты' | 'соя' | 'рыба' | 'кунжут' | 'горчица' | 'сельдерей';
+
 export type IngredientPrice = {
   name: string;
   category: string;
@@ -18,6 +20,7 @@ export type IngredientPrice = {
   protein: number;
   fats: number;
   carbs: number;
+  allergens?: Allergen[];
 };
 
 export const regions: Record<Region, string> = {
