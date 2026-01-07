@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
-import { recipes, type Recipe } from '@/lib/recipes-data';
+import { recipes, type Recipe, type RecipeCategory } from '@/lib/recipes-data';
 import { ingredientsPrices, regions, type Region } from '@/lib/ingredients-data';
 import IngredientsTab from '@/components/IngredientsTab';
 import RecipesTab from '@/components/RecipesTab';
@@ -30,6 +30,8 @@ const Index = () => {
   const [dailyProtein, setDailyProtein] = useState(0);
   const [dailyFats, setDailyFats] = useState(0);
   const [dailyCarbs, setDailyCarbs] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<RecipeCategory | 'все'>('все');
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
@@ -91,17 +93,47 @@ const Index = () => {
     return { full, partial: matchCount };
   };
 
-  const sortedRecipes = [...recipes].sort((a, b) => {
-    if (sortBy === 'price') return a.price - b.price;
-    if (sortBy === 'simplicity') return a.complexity - b.complexity;
-    return a.calories - b.calories;
-  });
+  const filteredRecipes = useMemo(() => {
+    let filtered = recipes;
+    
+    if (selectedCategory !== 'все') {
+      filtered = filtered.filter(r => r.category === selectedCategory);
+    }
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(r => 
+        r.name.toLowerCase().includes(query) ||
+        r.description.toLowerCase().includes(query) ||
+        r.ingredients.some(ing => ing.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }, [searchQuery, selectedCategory]);
 
-  const fullMatchRecipes = sortedRecipes.filter(r => getRecipeMatchScore(r).full);
-  const partialMatchRecipes = sortedRecipes.filter(r => {
-    const score = getRecipeMatchScore(r);
-    return !score.full && score.partial > 0;
-  }).sort((a, b) => getRecipeMatchScore(b).partial - getRecipeMatchScore(a).partial);
+  const sortedRecipes = useMemo(() => {
+    return [...filteredRecipes].sort((a, b) => {
+      if (sortBy === 'price') return a.price - b.price;
+      if (sortBy === 'simplicity') return a.complexity - b.complexity;
+      return a.calories - b.calories;
+    });
+  }, [filteredRecipes, sortBy]);
+
+  const fullMatchRecipes = useMemo(() => 
+    sortedRecipes.filter(r => getRecipeMatchScore(r).full), 
+    [sortedRecipes, ingredients]
+  );
+  
+  const partialMatchRecipes = useMemo(() => 
+    sortedRecipes
+      .filter(r => {
+        const score = getRecipeMatchScore(r);
+        return !score.full && score.partial > 0;
+      })
+      .sort((a, b) => getRecipeMatchScore(b).partial - getRecipeMatchScore(a).partial),
+    [sortedRecipes, ingredients]
+  );
 
   const dailyCaloriesGoal = 2000;
   const dailyProteinGoal = 150;
@@ -184,6 +216,10 @@ const Index = () => {
               toggleFavorite={toggleFavorite}
               setSelectedRecipe={setSelectedRecipe}
               getRecipeMatchScore={getRecipeMatchScore}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
             />
           </TabsContent>
 

@@ -1,4 +1,13 @@
-export type Region = 'moscow' | 'spb' | 'regions' | 'south';
+export type Region = 
+  | 'moscow' | 'spb' | 'kazan' | 'ekb' | 'nnovgorod' | 'chelyabinsk' | 'samara' 
+  | 'omsk' | 'rostov' | 'ufa' | 'krasnoyarsk' | 'voronezh' | 'perm' | 'volgograd' 
+  | 'krasnodar' | 'saratov' | 'tyumen' | 'tolyatti' | 'izhevsk' | 'barnaul' 
+  | 'vladivostok' | 'irkutsk' | 'khabarovsk' | 'yaroslavl' | 'makhachkala' 
+  | 'tomsk' | 'orenburg' | 'kemerovo' | 'novokuznetsk' | 'ryazan' | 'astrakhan' 
+  | 'naberezhnye' | 'penza' | 'lipetsk' | 'tula' | 'kirov' | 'cheboksary' 
+  | 'kaliningrad' | 'bryansk' | 'ivanovo' | 'magnitogorsk' | 'kursk' | 'tver' 
+  | 'sochi' | 'stavropol' | 'belgorod' | 'arkhangelsk' | 'vladimir' | 'surgut' 
+  | 'smolensk' | 'kaluga' | 'chita' | 'oryol' | 'yakutsk' | 'murmansk';
 
 export type IngredientPrice = {
   name: string;
@@ -14,15 +23,88 @@ export type IngredientPrice = {
 export const regions: Record<Region, string> = {
   moscow: 'Москва',
   spb: 'Санкт-Петербург',
-  regions: 'Регионы РФ',
-  south: 'Юг России'
+  kazan: 'Казань',
+  ekb: 'Екатеринбург',
+  nnovgorod: 'Нижний Новгород',
+  chelyabinsk: 'Челябинск',
+  samara: 'Самара',
+  omsk: 'Омск',
+  rostov: 'Ростов-на-Дону',
+  ufa: 'Уфа',
+  krasnoyarsk: 'Красноярск',
+  voronezh: 'Воронеж',
+  perm: 'Пермь',
+  volgograd: 'Волгоград',
+  krasnodar: 'Краснодар',
+  saratov: 'Саратов',
+  tyumen: 'Тюмень',
+  tolyatti: 'Тольятти',
+  izhevsk: 'Ижевск',
+  barnaul: 'Барнаул',
+  vladivostok: 'Владивосток',
+  irkutsk: 'Иркутск',
+  khabarovsk: 'Хабаровск',
+  yaroslavl: 'Ярославль',
+  makhachkala: 'Махачкала',
+  tomsk: 'Томск',
+  orenburg: 'Оренбург',
+  kemerovo: 'Кемерово',
+  novokuznetsk: 'Новокузнецк',
+  ryazan: 'Рязань',
+  astrakhan: 'Астрахань',
+  naberezhnye: 'Набережные Челны',
+  penza: 'Пенза',
+  lipetsk: 'Липецк',
+  tula: 'Тула',
+  kirov: 'Киров',
+  cheboksary: 'Чебоксары',
+  kaliningrad: 'Калининград',
+  bryansk: 'Брянск',
+  ivanovo: 'Иваново',
+  magnitogorsk: 'Магнитогорск',
+  kursk: 'Курск',
+  tver: 'Тверь',
+  sochi: 'Сочи',
+  stavropol: 'Ставрополь',
+  belgorod: 'Белгород',
+  arkhangelsk: 'Архангельск',
+  vladimir: 'Владимир',
+  surgut: 'Сургут',
+  smolensk: 'Смоленск',
+  kaluga: 'Калуга',
+  chita: 'Чита',
+  oryol: 'Орёл',
+  yakutsk: 'Якутск',
+  murmansk: 'Мурманск'
+};
+
+// Коэффициенты цен для регионов (относительно Москвы = 1.0)
+const regionCoefficients: Record<Region, number> = {
+  moscow: 1.0, spb: 0.96, kazan: 0.79, ekb: 0.82, nnovgorod: 0.77, chelyabinsk: 0.75, samara: 0.78,
+  omsk: 0.73, rostov: 0.71, ufa: 0.73, krasnoyarsk: 0.88, voronezh: 0.75, perm: 0.78, volgograd: 0.73,
+  krasnodar: 0.72, saratov: 0.73, tyumen: 0.83, tolyatti: 0.76, izhevsk: 0.74, barnaul: 0.71,
+  vladivostok: 1.21, irkutsk: 0.92, khabarovsk: 1.17, yaroslavl: 0.78, makhachkala: 0.68,
+  tomsk: 0.80, orenburg: 0.72, kemerovo: 0.73, novokuznetsk: 0.72, ryazan: 0.76, astrakhan: 0.70,
+  naberezhnye: 0.73, penza: 0.73, lipetsk: 0.74, tula: 0.77, kirov: 0.75, cheboksary: 0.73,
+  kaliningrad: 0.90, bryansk: 0.74, ivanovo: 0.73, magnitogorsk: 0.73, kursk: 0.73, tver: 0.78,
+  sochi: 0.82, stavropol: 0.71, belgorod: 0.75, arkhangelsk: 0.96, vladimir: 0.76, surgut: 1.04,
+  smolensk: 0.75, kaluga: 0.78, chita: 0.79, oryol: 0.74, yakutsk: 1.38, murmansk: 1.13
+};
+
+// Утилита для расчета цен по всем регионам
+const calculateRegionPrices = (moscowPrice: number): Record<Region, number> => {
+  const prices: Partial<Record<Region, number>> = {};
+  for (const [region, coef] of Object.entries(regionCoefficients) as [Region, number][]) {
+    prices[region] = Math.round(moscowPrice * coef);
+  }
+  return prices as Record<Region, number>;
 };
 
 export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'яйца',
     category: 'Молочные и яйца',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 85 },
+    prices: calculateRegionPrices(120),
     unit: '10 шт',
     calories: 157,
     protein: 13,
@@ -32,7 +114,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'молоко',
     category: 'Молочные и яйца',
-    prices: { moscow: 85, spb: 80, regions: 65, south: 60 },
+    prices: calculateRegionPrices(85),
     unit: '1 л',
     calories: 64,
     protein: 3,
@@ -42,7 +124,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сметана',
     category: 'Молочные и яйца',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '300 г',
     calories: 206,
     protein: 3,
@@ -52,7 +134,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'творог',
     category: 'Молочные и яйца',
-    prices: { moscow: 180, spb: 170, regions: 145, south: 135 },
+    prices: calculateRegionPrices(180),
     unit: '500 г',
     calories: 169,
     protein: 18,
@@ -62,7 +144,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сыр',
     category: 'Молочные и яйца',
-    prices: { moscow: 520, spb: 500, regions: 420, south: 390 },
+    prices: calculateRegionPrices(520),
     unit: '1 кг',
     calories: 356,
     protein: 25,
@@ -72,7 +154,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'моцарелла',
     category: 'Молочные и яйца',
-    prices: { moscow: 380, spb: 365, regions: 310, south: 290 },
+    prices: calculateRegionPrices(380),
     unit: '250 г',
     calories: 280,
     protein: 22,
@@ -82,7 +164,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'пармезан',
     category: 'Молочные и яйца',
-    prices: { moscow: 850, spb: 820, regions: 690, south: 640 },
+    prices: calculateRegionPrices(850),
     unit: '200 г',
     calories: 420,
     protein: 38,
@@ -92,7 +174,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'фета',
     category: 'Молочные и яйца',
-    prices: { moscow: 450, spb: 430, regions: 360, south: 330 },
+    prices: calculateRegionPrices(450),
     unit: '200 г',
     calories: 264,
     protein: 14,
@@ -102,7 +184,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'маскарпоне',
     category: 'Молочные и яйца',
-    prices: { moscow: 420, spb: 400, regions: 340, south: 315 },
+    prices: calculateRegionPrices(420),
     unit: '250 г',
     calories: 453,
     protein: 5,
@@ -112,7 +194,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сливки',
     category: 'Молочные и яйца',
-    prices: { moscow: 145, spb: 138, regions: 115, south: 105 },
+    prices: calculateRegionPrices(145),
     unit: '500 мл',
     calories: 337,
     protein: 2,
@@ -122,7 +204,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'помидор',
     category: 'Овощи',
-    prices: { moscow: 180, spb: 170, regions: 140, south: 100 },
+    prices: calculateRegionPrices(180),
     unit: '1 кг',
     calories: 18,
     protein: 1,
@@ -132,7 +214,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'огурец',
     category: 'Овощи',
-    prices: { moscow: 150, spb: 145, regions: 120, south: 85 },
+    prices: calculateRegionPrices(150),
     unit: '1 кг',
     calories: 15,
     protein: 1,
@@ -142,7 +224,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'картофель',
     category: 'Овощи',
-    prices: { moscow: 45, spb: 42, regions: 32, south: 28 },
+    prices: calculateRegionPrices(45),
     unit: '1 кг',
     calories: 77,
     protein: 2,
@@ -152,7 +234,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лук',
     category: 'Овощи',
-    prices: { moscow: 35, spb: 33, regions: 25, south: 22 },
+    prices: calculateRegionPrices(35),
     unit: '1 кг',
     calories: 40,
     protein: 1,
@@ -162,7 +244,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'морковь',
     category: 'Овощи',
-    prices: { moscow: 42, spb: 40, regions: 30, south: 26 },
+    prices: calculateRegionPrices(42),
     unit: '1 кг',
     calories: 41,
     protein: 1,
@@ -172,7 +254,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'перец',
     category: 'Овощи',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 180 },
+    prices: calculateRegionPrices(280),
     unit: '1 кг',
     calories: 27,
     protein: 1,
@@ -182,7 +264,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'капуста',
     category: 'Овощи',
-    prices: { moscow: 38, spb: 36, regions: 28, south: 24 },
+    prices: calculateRegionPrices(38),
     unit: '1 кг',
     calories: 25,
     protein: 1,
@@ -192,7 +274,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'свёкла',
     category: 'Овощи',
-    prices: { moscow: 48, spb: 45, regions: 35, south: 30 },
+    prices: calculateRegionPrices(48),
     unit: '1 кг',
     calories: 43,
     protein: 2,
@@ -202,7 +284,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'баклажан',
     category: 'Овощи',
-    prices: { moscow: 165, spb: 155, regions: 130, south: 95 },
+    prices: calculateRegionPrices(165),
     unit: '1 кг',
     calories: 25,
     protein: 1,
@@ -212,7 +294,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кабачок',
     category: 'Овощи',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 55 },
+    prices: calculateRegionPrices(95),
     unit: '1 кг',
     calories: 17,
     protein: 1,
@@ -222,7 +304,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'тыква',
     category: 'Овощи',
-    prices: { moscow: 58, spb: 55, regions: 42, south: 35 },
+    prices: calculateRegionPrices(58),
     unit: '1 кг',
     calories: 26,
     protein: 1,
@@ -232,7 +314,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'брокколи',
     category: 'Овощи',
-    prices: { moscow: 220, spb: 210, regions: 175, south: 155 },
+    prices: calculateRegionPrices(220),
     unit: '1 кг',
     calories: 34,
     protein: 3,
@@ -242,7 +324,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'салат',
     category: 'Овощи',
-    prices: { moscow: 145, spb: 138, regions: 115, south: 95 },
+    prices: calculateRegionPrices(145),
     unit: 'пучок',
     calories: 15,
     protein: 1,
@@ -252,7 +334,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'чеснок',
     category: 'Овощи',
-    prices: { moscow: 180, spb: 170, regions: 140, south: 120 },
+    prices: calculateRegionPrices(180),
     unit: '500 г',
     calories: 149,
     protein: 6,
@@ -262,7 +344,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'авокадо',
     category: 'Фрукты',
-    prices: { moscow: 180, spb: 170, regions: 145, south: 135 },
+    prices: calculateRegionPrices(180),
     unit: '1 шт',
     calories: 160,
     protein: 2,
@@ -272,7 +354,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лимон',
     category: 'Фрукты',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 65 },
+    prices: calculateRegionPrices(95),
     unit: '1 кг',
     calories: 29,
     protein: 1,
@@ -282,7 +364,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лайм',
     category: 'Фрукты',
-    prices: { moscow: 380, spb: 360, regions: 300, south: 280 },
+    prices: calculateRegionPrices(380),
     unit: '1 кг',
     calories: 30,
     protein: 1,
@@ -292,7 +374,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'банан',
     category: 'Фрукты',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '1 кг',
     calories: 89,
     protein: 1,
@@ -302,7 +384,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'куриная грудка',
     category: 'Мясо и птица',
-    prices: { moscow: 380, spb: 365, regions: 305, south: 280 },
+    prices: calculateRegionPrices(380),
     unit: '1 кг',
     calories: 165,
     protein: 31,
@@ -312,7 +394,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'курица',
     category: 'Мясо и птица',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 200 },
+    prices: calculateRegionPrices(280),
     unit: '1 кг',
     calories: 239,
     protein: 19,
@@ -322,7 +404,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'куриное филе',
     category: 'Мясо и птица',
-    prices: { moscow: 380, spb: 365, regions: 305, south: 280 },
+    prices: calculateRegionPrices(380),
     unit: '1 кг',
     calories: 165,
     protein: 31,
@@ -332,7 +414,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'свинина',
     category: 'Мясо и птица',
-    prices: { moscow: 420, spb: 400, regions: 335, south: 310 },
+    prices: calculateRegionPrices(420),
     unit: '1 кг',
     calories: 242,
     protein: 17,
@@ -342,7 +424,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'говядина',
     category: 'Мясо и птица',
-    prices: { moscow: 550, spb: 520, regions: 435, south: 400 },
+    prices: calculateRegionPrices(550),
     unit: '1 кг',
     calories: 250,
     protein: 26,
@@ -352,7 +434,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'баранина',
     category: 'Мясо и птица',
-    prices: { moscow: 650, spb: 620, regions: 520, south: 480 },
+    prices: calculateRegionPrices(650),
     unit: '1 кг',
     calories: 294,
     protein: 25,
@@ -362,7 +444,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'утка',
     category: 'Мясо и птица',
-    prices: { moscow: 480, spb: 460, regions: 385, south: 355 },
+    prices: calculateRegionPrices(480),
     unit: '1 кг',
     calories: 337,
     protein: 16,
@@ -372,7 +454,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'фарш говяжий',
     category: 'Мясо и птица',
-    prices: { moscow: 450, spb: 430, regions: 360, south: 330 },
+    prices: calculateRegionPrices(450),
     unit: '1 кг',
     calories: 254,
     protein: 17,
@@ -382,7 +464,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'бекон',
     category: 'Мясо и птица',
-    prices: { moscow: 580, spb: 550, regions: 460, south: 425 },
+    prices: calculateRegionPrices(580),
     unit: '1 кг',
     calories: 541,
     protein: 37,
@@ -392,7 +474,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'колбаса',
     category: 'Мясо и птица',
-    prices: { moscow: 420, spb: 400, regions: 335, south: 310 },
+    prices: calculateRegionPrices(420),
     unit: '1 кг',
     calories: 301,
     protein: 13,
@@ -402,7 +484,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лосось',
     category: 'Рыба и морепродукты',
-    prices: { moscow: 850, spb: 820, regions: 690, south: 640 },
+    prices: calculateRegionPrices(850),
     unit: '1 кг',
     calories: 208,
     protein: 20,
@@ -412,7 +494,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'семга',
     category: 'Рыба и морепродукты',
-    prices: { moscow: 950, spb: 920, regions: 775, south: 720 },
+    prices: calculateRegionPrices(950),
     unit: '1 кг',
     calories: 208,
     protein: 20,
@@ -422,7 +504,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'креветки',
     category: 'Рыба и морепродукты',
-    prices: { moscow: 780, spb: 750, regions: 630, south: 585 },
+    prices: calculateRegionPrices(780),
     unit: '1 кг',
     calories: 99,
     protein: 24,
@@ -432,7 +514,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'мидии',
     category: 'Рыба и морепродукты',
-    prices: { moscow: 620, spb: 595, regions: 500, south: 465 },
+    prices: calculateRegionPrices(620),
     unit: '1 кг',
     calories: 86,
     protein: 12,
@@ -442,7 +524,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кальмары',
     category: 'Рыба и морепродукты',
-    prices: { moscow: 480, spb: 460, regions: 385, south: 355 },
+    prices: calculateRegionPrices(480),
     unit: '1 кг',
     calories: 92,
     protein: 18,
@@ -452,7 +534,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'рис',
     category: 'Крупы и макароны',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '1 кг',
     calories: 130,
     protein: 3,
@@ -462,7 +544,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'рис арборио',
     category: 'Крупы и макароны',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '1 кг',
     calories: 130,
     protein: 3,
@@ -472,7 +554,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'гречка',
     category: 'Крупы и макароны',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '1 кг',
     calories: 123,
     protein: 4,
@@ -482,7 +564,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'овсянка',
     category: 'Крупы и макароны',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '1 кг',
     calories: 68,
     protein: 2,
@@ -492,7 +574,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'спагетти',
     category: 'Крупы и макароны',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 88 },
+    prices: calculateRegionPrices(120),
     unit: '1 кг',
     calories: 158,
     protein: 5,
@@ -502,7 +584,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'паста',
     category: 'Крупы и макароны',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 88 },
+    prices: calculateRegionPrices(120),
     unit: '1 кг',
     calories: 158,
     protein: 5,
@@ -512,7 +594,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'листы лазаньи',
     category: 'Крупы и макароны',
-    prices: { moscow: 220, spb: 210, regions: 175, south: 162 },
+    prices: calculateRegionPrices(220),
     unit: '500 г',
     calories: 158,
     protein: 5,
@@ -522,7 +604,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'мука',
     category: 'Выпечка',
-    prices: { moscow: 65, spb: 62, regions: 48, south: 45 },
+    prices: calculateRegionPrices(65),
     unit: '2 кг',
     calories: 364,
     protein: 10,
@@ -532,7 +614,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сахар',
     category: 'Выпечка',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '1 кг',
     calories: 387,
     protein: 0,
@@ -542,7 +624,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'разрыхлитель',
     category: 'Выпечка',
-    prices: { moscow: 75, spb: 72, regions: 60, south: 55 },
+    prices: calculateRegionPrices(75),
     unit: '100 г',
     calories: 0,
     protein: 0,
@@ -552,7 +634,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'дрожжи',
     category: 'Выпечка',
-    prices: { moscow: 45, spb: 43, regions: 35, south: 32 },
+    prices: calculateRegionPrices(45),
     unit: '100 г',
     calories: 75,
     protein: 9,
@@ -562,7 +644,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'ваниль',
     category: 'Выпечка',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '10 г',
     calories: 288,
     protein: 0,
@@ -572,7 +654,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'печенье',
     category: 'Выпечка',
-    prices: { moscow: 145, spb: 138, regions: 115, south: 105 },
+    prices: calculateRegionPrices(145),
     unit: '500 г',
     calories: 417,
     protein: 7,
@@ -582,7 +664,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'савоярди',
     category: 'Выпечка',
-    prices: { moscow: 250, spb: 240, regions: 200, south: 185 },
+    prices: calculateRegionPrices(250),
     unit: '400 г',
     calories: 392,
     protein: 8,
@@ -592,7 +674,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'грибы',
     category: 'Грибы и зелень',
-    prices: { moscow: 320, spb: 305, regions: 255, south: 235 },
+    prices: calculateRegionPrices(320),
     unit: '1 кг',
     calories: 22,
     protein: 3,
@@ -602,7 +684,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'базилик',
     category: 'Грибы и зелень',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 85 },
+    prices: calculateRegionPrices(120),
     unit: 'пучок',
     calories: 23,
     protein: 3,
@@ -612,7 +694,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кориандр',
     category: 'Грибы и зелень',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 65 },
+    prices: calculateRegionPrices(95),
     unit: 'пучок',
     calories: 23,
     protein: 2,
@@ -622,7 +704,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'зелень',
     category: 'Грибы и зелень',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 60 },
+    prices: calculateRegionPrices(85),
     unit: 'пучок',
     calories: 22,
     protein: 2,
@@ -632,7 +714,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'орехи',
     category: 'Орехи и семена',
-    prices: { moscow: 480, spb: 460, regions: 385, south: 355 },
+    prices: calculateRegionPrices(480),
     unit: '500 г',
     calories: 654,
     protein: 15,
@@ -642,7 +724,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кедровые орехи',
     category: 'Орехи и семена',
-    prices: { moscow: 850, spb: 820, regions: 690, south: 640 },
+    prices: calculateRegionPrices(850),
     unit: '200 г',
     calories: 673,
     protein: 14,
@@ -652,7 +734,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кунжут',
     category: 'Орехи и семена',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '200 г',
     calories: 573,
     protein: 18,
@@ -662,7 +744,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'семечки',
     category: 'Орехи и семена',
-    prices: { moscow: 150, spb: 145, regions: 120, south: 110 },
+    prices: calculateRegionPrices(150),
     unit: '500 г',
     calories: 584,
     protein: 21,
@@ -672,7 +754,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'хлеб',
     category: 'Хлебобулочные',
-    prices: { moscow: 55, spb: 52, regions: 42, south: 38 },
+    prices: calculateRegionPrices(55),
     unit: '1 буханка',
     calories: 265,
     protein: 9,
@@ -682,7 +764,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'багет',
     category: 'Хлебобулочные',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '1 шт',
     calories: 274,
     protein: 9,
@@ -692,7 +774,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лаваш',
     category: 'Хлебобулочные',
-    prices: { moscow: 45, spb: 43, regions: 35, south: 32 },
+    prices: calculateRegionPrices(45),
     unit: '1 шт',
     calories: 277,
     protein: 8,
@@ -702,7 +784,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'тортилья',
     category: 'Хлебобулочные',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: 'упаковка',
     calories: 312,
     protein: 8,
@@ -712,7 +794,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'тесто',
     category: 'Хлебобулочные',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 88 },
+    prices: calculateRegionPrices(120),
     unit: '500 г',
     calories: 274,
     protein: 9,
@@ -722,7 +804,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'блинчики',
     category: 'Хлебобулочные',
-    prices: { moscow: 75, spb: 72, regions: 60, south: 55 },
+    prices: calculateRegionPrices(75),
     unit: 'упаковка',
     calories: 227,
     protein: 6,
@@ -732,7 +814,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'масло',
     category: 'Масла и соусы',
-    prices: { moscow: 180, spb: 170, regions: 145, south: 135 },
+    prices: calculateRegionPrices(180),
     unit: '1 л',
     calories: 884,
     protein: 0,
@@ -742,7 +824,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'оливковое масло',
     category: 'Масла и соусы',
-    prices: { moscow: 450, spb: 430, regions: 360, south: 330 },
+    prices: calculateRegionPrices(450),
     unit: '500 мл',
     calories: 884,
     protein: 0,
@@ -752,7 +834,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сливочное масло',
     category: 'Масла и соусы',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '200 г',
     calories: 717,
     protein: 1,
@@ -762,7 +844,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'соус цезарь',
     category: 'Масла и соусы',
-    prices: { moscow: 220, spb: 210, regions: 175, south: 162 },
+    prices: calculateRegionPrices(220),
     unit: '250 мл',
     calories: 387,
     protein: 2,
@@ -772,7 +854,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'соус терияки',
     category: 'Масла и соусы',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '250 мл',
     calories: 89,
     protein: 3,
@@ -782,7 +864,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'соус хойсин',
     category: 'Масла и соусы',
-    prices: { moscow: 320, spb: 305, regions: 255, south: 235 },
+    prices: calculateRegionPrices(320),
     unit: '250 мл',
     calories: 220,
     protein: 1,
@@ -792,7 +874,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'томатная паста',
     category: 'Масла и соусы',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '500 г',
     calories: 82,
     protein: 4,
@@ -802,7 +884,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'томатный соус',
     category: 'Масла и соусы',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '500 г',
     calories: 29,
     protein: 1,
@@ -812,7 +894,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'уксус',
     category: 'Масла и соусы',
-    prices: { moscow: 65, spb: 62, regions: 48, south: 45 },
+    prices: calculateRegionPrices(65),
     unit: '500 мл',
     calories: 18,
     protein: 0,
@@ -822,7 +904,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'мёд',
     category: 'Другое',
-    prices: { moscow: 420, spb: 400, regions: 335, south: 310 },
+    prices: calculateRegionPrices(420),
     unit: '500 г',
     calories: 304,
     protein: 0,
@@ -832,7 +914,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сироп',
     category: 'Другое',
-    prices: { moscow: 380, spb: 365, regions: 305, south: 280 },
+    prices: calculateRegionPrices(380),
     unit: '250 мл',
     calories: 260,
     protein: 0,
@@ -842,7 +924,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'шоколад',
     category: 'Другое',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '100 г',
     calories: 546,
     protein: 5,
@@ -852,7 +934,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'какао',
     category: 'Другое',
-    prices: { moscow: 220, spb: 210, regions: 175, south: 162 },
+    prices: calculateRegionPrices(220),
     unit: '200 г',
     calories: 228,
     protein: 20,
@@ -862,7 +944,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кофе',
     category: 'Другое',
-    prices: { moscow: 420, spb: 400, regions: 335, south: 310 },
+    prices: calculateRegionPrices(420),
     unit: '250 г',
     calories: 2,
     protein: 0,
@@ -872,7 +954,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'соль',
     category: 'Специи',
-    prices: { moscow: 25, spb: 24, regions: 18, south: 16 },
+    prices: calculateRegionPrices(25),
     unit: '1 кг',
     calories: 0,
     protein: 0,
@@ -882,7 +964,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'перец чили',
     category: 'Специи',
-    prices: { moscow: 180, spb: 170, regions: 145, south: 120 },
+    prices: calculateRegionPrices(180),
     unit: '50 г',
     calories: 40,
     protein: 2,
@@ -892,7 +974,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'черный перец',
     category: 'Специи',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 88 },
+    prices: calculateRegionPrices(120),
     unit: '50 г',
     calories: 251,
     protein: 10,
@@ -902,7 +984,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'специи',
     category: 'Специи',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '100 г',
     calories: 250,
     protein: 8,
@@ -912,7 +994,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'орегано',
     category: 'Специи',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '30 г',
     calories: 265,
     protein: 9,
@@ -922,7 +1004,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'тимьян',
     category: 'Специи',
-    prices: { moscow: 110, spb: 105, regions: 85, south: 78 },
+    prices: calculateRegionPrices(110),
     unit: '30 г',
     calories: 101,
     protein: 6,
@@ -932,7 +1014,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кумин',
     category: 'Специи',
-    prices: { moscow: 145, spb: 138, regions: 115, south: 105 },
+    prices: calculateRegionPrices(145),
     unit: '50 г',
     calories: 375,
     protein: 18,
@@ -942,7 +1024,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'паприка',
     category: 'Специи',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 88 },
+    prices: calculateRegionPrices(120),
     unit: '50 г',
     calories: 282,
     protein: 14,
@@ -952,7 +1034,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'зира',
     category: 'Специи',
-    prices: { moscow: 150, spb: 145, regions: 120, south: 110 },
+    prices: calculateRegionPrices(150),
     unit: '50 г',
     calories: 375,
     protein: 18,
@@ -962,7 +1044,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'розмарин',
     category: 'Специи',
-    prices: { moscow: 125, spb: 120, regions: 100, south: 92 },
+    prices: calculateRegionPrices(125),
     unit: '30 г',
     calories: 131,
     protein: 3,
@@ -972,7 +1054,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'имбирь',
     category: 'Специи',
-    prices: { moscow: 320, spb: 305, regions: 255, south: 210 },
+    prices: calculateRegionPrices(320),
     unit: '200 г',
     calories: 80,
     protein: 2,
@@ -982,7 +1064,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'горчица',
     category: 'Специи',
-    prices: { moscow: 75, spb: 72, regions: 60, south: 55 },
+    prices: calculateRegionPrices(75),
     unit: '200 г',
     calories: 66,
     protein: 4,
@@ -992,7 +1074,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лавровый лист',
     category: 'Специи',
-    prices: { moscow: 55, spb: 52, regions: 42, south: 38 },
+    prices: calculateRegionPrices(55),
     unit: '20 г',
     calories: 313,
     protein: 8,
@@ -1002,7 +1084,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'барбарис',
     category: 'Специи',
-    prices: { moscow: 180, spb: 170, regions: 145, south: 135 },
+    prices: calculateRegionPrices(180),
     unit: '100 г',
     calories: 316,
     protein: 3,
@@ -1012,7 +1094,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'шафран',
     category: 'Специи',
-    prices: { moscow: 850, spb: 820, regions: 690, south: 640 },
+    prices: calculateRegionPrices(850),
     unit: '1 г',
     calories: 310,
     protein: 11,
@@ -1022,7 +1104,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'нут',
     category: 'Бобовые',
-    prices: { moscow: 165, spb: 155, regions: 130, south: 120 },
+    prices: calculateRegionPrices(165),
     unit: '500 г',
     calories: 164,
     protein: 9,
@@ -1032,7 +1114,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'фасоль',
     category: 'Бобовые',
-    prices: { moscow: 145, spb: 138, regions: 115, south: 105 },
+    prices: calculateRegionPrices(145),
     unit: '500 г',
     calories: 127,
     protein: 8,
@@ -1042,7 +1124,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'тахини',
     category: 'Соусы и пасты',
-    prices: { moscow: 380, spb: 365, regions: 305, south: 280 },
+    prices: calculateRegionPrices(380),
     unit: '250 г',
     calories: 595,
     protein: 17,
@@ -1052,7 +1134,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'паста том ям',
     category: 'Соусы и пасты',
-    prices: { moscow: 320, spb: 305, regions: 255, south: 235 },
+    prices: calculateRegionPrices(320),
     unit: '200 г',
     calories: 120,
     protein: 2,
@@ -1062,7 +1144,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'карри паста',
     category: 'Соусы и пасты',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '200 г',
     calories: 140,
     protein: 2,
@@ -1072,7 +1154,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'кокосовое молоко',
     category: 'Молочные альтернативы',
-    prices: { moscow: 220, spb: 210, regions: 175, south: 162 },
+    prices: calculateRegionPrices(220),
     unit: '400 мл',
     calories: 230,
     protein: 2,
@@ -1082,7 +1164,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'маслины',
     category: 'Консервы',
-    prices: { moscow: 165, spb: 155, regions: 130, south: 120 },
+    prices: calculateRegionPrices(165),
     unit: '300 г',
     calories: 115,
     protein: 1,
@@ -1092,7 +1174,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сухарики',
     category: 'Снеки',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '200 г',
     calories: 406,
     protein: 12,
@@ -1102,7 +1184,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'панировочные сухари',
     category: 'Выпечка',
-    prices: { moscow: 65, spb: 62, regions: 48, south: 45 },
+    prices: calculateRegionPrices(65),
     unit: '500 г',
     calories: 395,
     protein: 13,
@@ -1112,7 +1194,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'бульон',
     category: 'Другое',
-    prices: { moscow: 75, spb: 72, regions: 60, south: 55 },
+    prices: calculateRegionPrices(75),
     unit: '1 л',
     calories: 15,
     protein: 2,
@@ -1122,7 +1204,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'квас',
     category: 'Напитки',
-    prices: { moscow: 85, spb: 82, regions: 68, south: 62 },
+    prices: calculateRegionPrices(85),
     unit: '2 л',
     calories: 27,
     protein: 0,
@@ -1132,7 +1214,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'белое вино',
     category: 'Алкоголь',
-    prices: { moscow: 450, spb: 430, regions: 360, south: 330 },
+    prices: calculateRegionPrices(450),
     unit: '750 мл',
     calories: 82,
     protein: 0,
@@ -1142,7 +1224,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'лемонграсс',
     category: 'Экзотические специи',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 205 },
+    prices: calculateRegionPrices(280),
     unit: '50 г',
     calories: 99,
     protein: 1,
@@ -1152,7 +1234,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'галангал',
     category: 'Экзотические специи',
-    prices: { moscow: 350, spb: 335, regions: 280, south: 260 },
+    prices: calculateRegionPrices(350),
     unit: '50 г',
     calories: 71,
     protein: 1,
@@ -1162,7 +1244,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'сельдерей',
     category: 'Овощи',
-    prices: { moscow: 120, spb: 115, regions: 95, south: 85 },
+    prices: calculateRegionPrices(120),
     unit: '1 пучок',
     calories: 16,
     protein: 1,
@@ -1172,7 +1254,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'редис',
     category: 'Овощи',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 65 },
+    prices: calculateRegionPrices(95),
     unit: '1 пучок',
     calories: 16,
     protein: 1,
@@ -1182,7 +1264,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'виноградные листья',
     category: 'Другое',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 180 },
+    prices: calculateRegionPrices(280),
     unit: '200 г',
     calories: 93,
     protein: 6,
@@ -1192,7 +1274,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'йогурт',
     category: 'Молочные и яйца',
-    prices: { moscow: 95, spb: 90, regions: 75, south: 70 },
+    prices: calculateRegionPrices(95),
     unit: '500 г',
     calories: 59,
     protein: 10,
@@ -1202,7 +1284,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'творожный сыр',
     category: 'Молочные и яйца',
-    prices: { moscow: 320, spb: 305, regions: 255, south: 235 },
+    prices: calculateRegionPrices(320),
     unit: '500 г',
     calories: 350,
     protein: 8,
@@ -1212,7 +1294,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'чили',
     category: 'Овощи',
-    prices: { moscow: 280, spb: 265, regions: 220, south: 180 },
+    prices: calculateRegionPrices(280),
     unit: '100 г',
     calories: 40,
     protein: 2,
@@ -1222,7 +1304,7 @@ export const ingredientsPrices: IngredientPrice[] = [
   {
     name: 'зеленый лук',
     category: 'Грибы и зелень',
-    prices: { moscow: 75, spb: 72, regions: 60, south: 50 },
+    prices: calculateRegionPrices(75),
     unit: '1 пучок',
     calories: 32,
     protein: 2,
