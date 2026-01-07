@@ -147,16 +147,17 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <div className="min-h-screen culinary-gradient food-pattern">
       <div className="max-w-md mx-auto p-4 pb-20">
         <div className="mb-6 text-center animate-fade-in">
-          <h1 className="text-4xl font-heading font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent mb-2">
+          <div className="text-5xl mb-2">👨‍🍳</div>
+          <h1 className="text-4xl font-heading font-bold text-primary mb-1">
             МояКухня
           </h1>
-          <p className="text-muted-foreground">Твой персональный помощник</p>
+          <p className="text-muted-foreground text-sm">Ваша домашняя кулинарная книга</p>
         </div>
 
-        <Card className="mb-4 p-4 bg-white/90 backdrop-blur-sm animate-scale-in">
+        <Card className="mb-4 p-4 bg-white/95 backdrop-blur-sm shadow-md border-orange-200 animate-scale-in">
           <div className="flex items-center gap-3">
             <Icon name="MapPin" className="w-5 h-5 text-primary" />
             <div className="flex-1">
@@ -176,20 +177,20 @@ const Index = () => {
         </Card>
 
         <Tabs defaultValue="ingredients" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="ingredients" className="text-xs">
-              <Icon name="Salad" className="w-4 h-4 mr-1" />
+          <TabsList className="grid w-full grid-cols-4 bg-white/95 backdrop-blur-sm shadow-sm border border-orange-200">
+            <TabsTrigger value="ingredients" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
+              <Icon name="ShoppingBasket" className="w-4 h-4 mr-1" />
               Продукты
             </TabsTrigger>
-            <TabsTrigger value="recipes" className="text-xs">
+            <TabsTrigger value="recipes" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
               <Icon name="ChefHat" className="w-4 h-4 mr-1" />
               Рецепты
             </TabsTrigger>
-            <TabsTrigger value="calories" className="text-xs">
+            <TabsTrigger value="calories" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
               <Icon name="Activity" className="w-4 h-4 mr-1" />
               Калории
             </TabsTrigger>
-            <TabsTrigger value="favorites" className="text-xs">
+            <TabsTrigger value="favorites" className="text-xs data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900">
               <Icon name="Heart" className="w-4 h-4 mr-1" />
               Избранное
             </TabsTrigger>
@@ -242,10 +243,10 @@ const Index = () => {
 
           <TabsContent value="favorites" className="space-y-3">
             {favorites.length === 0 ? (
-              <Card className="p-8 text-center bg-white/70 backdrop-blur-sm">
-                <Icon name="Heart" className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-muted-foreground">Нет избранных рецептов</p>
-                <p className="text-sm text-muted-foreground mt-1">Добавьте понравившиеся рецепты</p>
+              <Card className="p-8 text-center bg-white/90 backdrop-blur-sm border-orange-200">
+                <div className="text-5xl mb-3">❤️</div>
+                <p className="text-gray-700 font-medium">Нет избранных рецептов</p>
+                <p className="text-sm text-gray-500 mt-1">Добавьте понравившиеся рецепты</p>
               </Card>
             ) : (
               recipes
