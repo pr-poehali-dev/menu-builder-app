@@ -84,6 +84,13 @@ export const dietModes: Record<DietMode, DietModeConfig> = {
   }
 };
 
+const hasAnimalProducts = (ingredients: string[]): boolean => {
+  const animalKeywords = ['мясо', 'курица', 'говядина', 'свинина', 'баранина', 'рыба', 'семга', 'молоко', 'сметана', 'творог', 'яйца', 'фарш', 'колбаса', 'бекон', 'сыр', 'фета', 'пармезан'];
+  return ingredients.some(ing => 
+    animalKeywords.some(keyword => ing.toLowerCase().includes(keyword))
+  );
+};
+
 export const getFilteredRecipesByMode = (recipes: any[], mode: DietMode) => {
   const config = dietModes[mode];
   
@@ -91,7 +98,22 @@ export const getFilteredRecipesByMode = (recipes: any[], mode: DietMode) => {
     if (mode === 'express' && recipe.time > 30) return false;
     if (recipe.complexity > config.maxComplexity) return false;
     if (mode === 'weight_loss' && recipe.calories > 400) return false;
+    if (mode === 'muscle_gain' && recipe.protein < 20) return false;
+    if (mode === 'recovery' && recipe.complexity > 2) return false;
+    if (mode === 'vegan' && hasAnimalProducts(recipe.ingredients)) return false;
     
     return true;
+  });
+};
+
+export const sortRecipesByMode = (recipes: any[], mode: DietMode) => {
+  const filtered = getFilteredRecipesByMode(recipes, mode);
+  
+  return filtered.sort((a, b) => {
+    if (mode === 'express') return a.time - b.time;
+    if (mode === 'weight_loss') return a.calories - b.calories;
+    if (mode === 'muscle_gain') return b.protein - a.protein;
+    if (mode === 'recovery') return a.complexity - b.complexity;
+    return a.complexity - b.complexity;
   });
 };

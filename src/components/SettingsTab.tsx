@@ -1,15 +1,19 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { type DietMode, dietModes } from '@/lib/diet-modes';
 import { type Allergen } from '@/lib/ingredients-data';
+import { requestNotificationPermission } from '@/lib/notifications';
 
 type SettingsTabProps = {
   dietMode: DietMode;
   setDietMode: (mode: DietMode) => void;
   excludedAllergens: Allergen[];
   setExcludedAllergens: (allergens: Allergen[]) => void;
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (enabled: boolean) => void;
 };
 
 const allergensList: { value: Allergen; label: string; icon: string }[] = [
@@ -25,7 +29,9 @@ const allergensList: { value: Allergen; label: string; icon: string }[] = [
   { value: 'сельдерей', label: 'Сельдерей', icon: '🥬' }
 ];
 
-const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAllergens }: SettingsTabProps) => {
+const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAllergens, notificationsEnabled, setNotificationsEnabled }: SettingsTabProps) => {
+  const [notificationStatus, setNotificationStatus] = useState<'granted' | 'denied' | 'default'>('default');
+
   const toggleAllergen = (allergen: Allergen) => {
     if (excludedAllergens.includes(allergen)) {
       setExcludedAllergens(excludedAllergens.filter(a => a !== allergen));
@@ -34,14 +40,48 @@ const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAlle
     }
   };
 
+  const handleEnableNotifications = async () => {
+    const granted = await requestNotificationPermission();
+    setNotificationStatus(granted ? 'granted' : 'denied');
+    setNotificationsEnabled(granted);
+    localStorage.setItem('notificationsEnabled', JSON.stringify(granted));
+  };
+
   const currentMode = dietModes[dietMode];
 
   return (
     <div className="space-y-3">
-      <Card className="p-4 bg-white/95 backdrop-blur-sm border-orange-200 shadow-md">
+      <Card className="p-4 glass-effect border-0 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
-          <Icon name="Settings" className="w-5 h-5 text-orange-600" />
-          <h3 className="font-heading font-semibold text-lg text-gray-900">Режим питания</h3>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <Icon name="Bell" className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="font-heading font-bold text-lg text-gray-900">Уведомления</h3>
+        </div>
+        
+        <div className="mb-4">
+          <Button
+            onClick={handleEnableNotifications}
+            className={`w-full ${notificationsEnabled ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700'}`}
+            disabled={notificationsEnabled}
+          >
+            <Icon name={notificationsEnabled ? 'Check' : 'Bell'} className="w-4 h-4 mr-2" />
+            {notificationsEnabled ? 'Уведомления включены' : 'Включить уведомления'}
+          </Button>
+          <p className="text-xs text-gray-600 mt-2 text-center">
+            {notificationsEnabled 
+              ? 'Вы будете получать напоминания о приёме пищи' 
+              : 'Получайте напоминания о запланированных блюдах'}
+          </p>
+        </div>
+      </Card>
+
+      <Card className="p-4 glass-effect border-0 shadow-lg">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <Icon name="Utensils" className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="font-heading font-bold text-lg text-gray-900">Режим питания</h3>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
@@ -51,21 +91,21 @@ const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAlle
               <button
                 key={mode.id}
                 onClick={() => setDietMode(mode.id)}
-                className={`p-3 rounded-lg text-left transition-all border-2 ${
+                className={`p-3 rounded-xl text-left transition-all border-2 ${
                   isActive 
-                    ? 'bg-orange-50 border-orange-500 shadow-md' 
-                    : 'bg-white border-gray-200 hover:border-orange-300 hover:bg-orange-50/50'
+                    ? 'bg-gradient-to-br from-violet-50 to-purple-50 border-violet-500 shadow-lg' 
+                    : 'bg-white border-gray-200 hover:border-violet-300 hover:bg-violet-50/50'
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{mode.icon}</span>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className={`font-semibold ${isActive ? 'text-orange-900' : 'text-gray-900'}`}>
+                      <h4 className={`font-bold ${isActive ? 'text-violet-900' : 'text-gray-900'}`}>
                         {mode.name}
                       </h4>
                       {isActive && (
-                        <Badge className="bg-orange-500 text-white text-xs">
+                        <Badge className="bg-gradient-to-r from-violet-500 to-purple-600 text-white text-xs border-0">
                           Активен
                         </Badge>
                       )}
@@ -93,10 +133,12 @@ const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAlle
         </div>
       </Card>
 
-      <Card className="p-4 bg-white/95 backdrop-blur-sm border-orange-200 shadow-md">
+      <Card className="p-4 glass-effect border-0 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
-          <Icon name="ShieldAlert" className="w-5 h-5 text-red-600" />
-          <h3 className="font-heading font-semibold text-lg text-gray-900">Аллергены</h3>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
+            <Icon name="ShieldAlert" className="w-5 h-5 text-white" />
+          </div>
+          <h3 className="font-heading font-bold text-lg text-gray-900">Аллергены</h3>
         </div>
 
         <p className="text-sm text-gray-600 mb-3">
@@ -110,20 +152,20 @@ const SettingsTab = ({ dietMode, setDietMode, excludedAllergens, setExcludedAlle
               <button
                 key={allergen.value}
                 onClick={() => toggleAllergen(allergen.value)}
-                className={`p-3 rounded-lg text-left transition-all border-2 ${
+                className={`p-3 rounded-xl text-left transition-all border-2 ${
                   isExcluded 
-                    ? 'bg-red-50 border-red-500 shadow-md' 
-                    : 'bg-white border-gray-200 hover:border-red-300'
+                    ? 'bg-gradient-to-br from-red-50 to-rose-50 border-red-500 shadow-lg' 
+                    : 'bg-white border-gray-200 hover:border-red-300 hover:bg-red-50/50'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{allergen.icon}</span>
                   <div className="flex-1">
-                    <p className={`text-sm font-medium ${isExcluded ? 'text-red-900' : 'text-gray-900'}`}>
+                    <p className={`text-sm font-bold ${isExcluded ? 'text-red-900' : 'text-gray-900'}`}>
                       {allergen.label}
                     </p>
                     {isExcluded && (
-                      <p className="text-[10px] text-red-600">Исключён</p>
+                      <p className="text-[10px] text-red-600 font-medium">Исключён</p>
                     )}
                   </div>
                   {isExcluded && (

@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { recipes, type Recipe, type RecipeCategory } from '@/lib/recipes-data';
 import { ingredientsPrices, regions, type Region, type Allergen } from '@/lib/ingredients-data';
 import { type Budget, getDefaultBudget } from '@/lib/budget-data';
-import { type DietMode, dietModes } from '@/lib/diet-modes';
+import { type DietMode, dietModes, sortRecipesByMode } from '@/lib/diet-modes';
 import { type CalendarMeal, type Reminder, generateWeekDates, defaultMealTimes, type MealTime } from '@/lib/calendar-data';
+import { requestNotificationPermission, showNotification, createMealNotification } from '@/lib/notifications';
 import IngredientsTab from '@/components/IngredientsTab';
 import RecipesTab from '@/components/RecipesTab';
 import CaloriesTab from '@/components/CaloriesTab';
@@ -45,6 +47,7 @@ const Index = () => {
   const [dietMode, setDietMode] = useState<DietMode>('standard');
   const [calendarMeals, setCalendarMeals] = useState<CalendarMeal[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   
   useEffect(() => {
     const savedBudget = localStorage.getItem('budget');
@@ -52,13 +55,21 @@ const Index = () => {
     const savedMode = localStorage.getItem('dietMode');
     const savedMeals = localStorage.getItem('calendarMeals');
     const savedReminders = localStorage.getItem('reminders');
+    const savedNotifications = localStorage.getItem('notificationsEnabled');
     
     if (savedBudget) setBudget(JSON.parse(savedBudget));
     if (savedAllergens) setExcludedAllergens(JSON.parse(savedAllergens));
     if (savedMode) setDietMode(savedMode as DietMode);
     if (savedMeals) setCalendarMeals(JSON.parse(savedMeals));
     if (savedReminders) setReminders(JSON.parse(savedReminders));
+    if (savedNotifications) setNotificationsEnabled(JSON.parse(savedNotifications));
   }, []);
+  
+  useEffect(() => {
+    if (notificationsEnabled) {
+      requestNotificationPermission();
+    }
+  }, [notificationsEnabled]);
   
   useEffect(() => {
     localStorage.setItem('budget', JSON.stringify(budget));
@@ -112,6 +123,17 @@ const Index = () => {
       completed: false
     };
     setCalendarMeals([...calendarMeals, newMeal]);
+    
+    if (notificationsEnabled) {
+      const mealTimes: Record<MealTime, string> = {
+        breakfast: '08:00',
+        lunch: '13:00',
+        dinner: '18:00',
+        snack: '16:00'
+      };
+      const notification = createMealNotification(recipeName, mealTimes[time]);
+      showNotification(notification);
+    }
   };
   
   const toggleMealCompletion = (mealId: string) => {
@@ -190,18 +212,7 @@ const Index = () => {
   };
 
   const filteredRecipes = useMemo(() => {
-    let filtered = recipes;
-    
-    const modeConfig = dietModes[dietMode];
-    if (dietMode === 'express') {
-      filtered = filtered.filter(r => r.time <= 30);
-    }
-    if (modeConfig.maxComplexity < 5) {
-      filtered = filtered.filter(r => r.complexity <= modeConfig.maxComplexity);
-    }
-    if (dietMode === 'weight_loss') {
-      filtered = filtered.filter(r => r.calories <= 400);
-    }
+    let filtered = sortRecipesByMode(recipes, dietMode);
     
     if (excludedAllergens.length > 0) {
       filtered = filtered.filter(recipe => {
@@ -398,6 +409,8 @@ const Index = () => {
               setDietMode={setDietMode}
               excludedAllergens={excludedAllergens}
               setExcludedAllergens={setExcludedAllergens}
+              notificationsEnabled={notificationsEnabled}
+              setNotificationsEnabled={setNotificationsEnabled}
             />
           </TabsContent>
 
