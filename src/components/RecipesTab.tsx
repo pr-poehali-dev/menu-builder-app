@@ -30,12 +30,6 @@ type RecipesTabProps = {
   setSearchQuery: (value: string) => void;
   selectedCategory: RecipeCategory | 'все';
   setSelectedCategory: (value: RecipeCategory | 'все') => void;
-  maxTime: number;
-  setMaxTime: (value: number) => void;
-  maxPrice: number;
-  setMaxPrice: (value: number) => void;
-  maxComplexity: number;
-  setMaxComplexity: (value: number) => void;
 };
 
 const RecipesTab = ({
@@ -53,12 +47,6 @@ const RecipesTab = ({
   setSearchQuery,
   selectedCategory,
   setSelectedCategory,
-  maxTime,
-  setMaxTime,
-  maxPrice,
-  setMaxPrice,
-  maxComplexity,
-  setMaxComplexity,
 }: RecipesTabProps) => {
   const categories: Array<RecipeCategory | 'все'> = ['все', 'завтрак', 'обед', 'ужин', 'десерт', 'выпечка', 'супы', 'салаты', 'напитки', 'закуски'];
 
@@ -75,59 +63,20 @@ const RecipesTab = ({
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">Категория</p>
-            <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as RecipeCategory | 'все')}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(cat => (
-                  <SelectItem key={cat} value={cat} className="capitalize">
-                    {cat === 'все' ? 'Все категории' : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">Время: до {maxTime} мин</p>
-            <Input
-              type="range"
-              min="5"
-              max="180"
-              step="5"
-              value={maxTime}
-              onChange={(e) => setMaxTime(Number(e.target.value))}
-              className="h-8"
-            />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">Цена: до {maxPrice}/5</p>
-            <Input
-              type="range"
-              min="1"
-              max="5"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="h-8"
-            />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">Сложность: до {maxComplexity}/5</p>
-            <Input
-              type="range"
-              min="1"
-              max="5"
-              value={maxComplexity}
-              onChange={(e) => setMaxComplexity(Number(e.target.value))}
-              className="h-8"
-            />
-          </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Категория</p>
+          <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as RecipeCategory | 'все')}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat} className="capitalize">
+                  {cat === 'все' ? 'Все категории' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <div>
