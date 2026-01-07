@@ -274,18 +274,20 @@ const Index = () => {
     <div className="min-h-screen culinary-gradient food-pattern">
       <div className="max-w-md mx-auto p-4 pb-20">
         <div className="mb-6 text-center animate-fade-in">
-          <div className="text-5xl mb-2">👨‍🍳</div>
-          <h1 className="text-4xl font-heading font-bold text-primary mb-1">
+          <div className="text-5xl mb-3">🍳</div>
+          <h1 className="text-4xl font-heading font-extrabold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-2">
             МояКухня
           </h1>
-          <p className="text-muted-foreground text-sm">Ваша домашняя кулинарная книга</p>
+          <p className="text-gray-600 text-sm font-medium">Современная кулинарная платформа</p>
         </div>
 
-        <Card className="mb-4 p-4 bg-white/95 backdrop-blur-sm shadow-md border-orange-200 animate-scale-in">
+        <Card className="mb-4 p-4 glass-effect shadow-lg border-0 animate-scale-in">
           <div className="flex items-center gap-3">
-            <Icon name="MapPin" className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <Icon name="MapPin" className="w-5 h-5 text-white" />
+            </div>
             <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-1">Ваш регион</p>
+              <p className="text-xs text-gray-600 mb-1 font-medium">Ваш регион</p>
               <Select value={region} onValueChange={(v) => setRegion(v as Region)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -301,23 +303,23 @@ const Index = () => {
         </Card>
 
         <Tabs defaultValue="recipes" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6 bg-white/95 backdrop-blur-sm shadow-sm border border-orange-200 gap-1">
-            <TabsTrigger value="recipes" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+          <TabsList className="grid w-full grid-cols-6 glass-effect shadow-md border-0 p-1 gap-1">
+            <TabsTrigger value="recipes" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="ChefHat" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+            <TabsTrigger value="calendar" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="Calendar" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="ingredients" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+            <TabsTrigger value="ingredients" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="ShoppingBasket" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="budget" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+            <TabsTrigger value="budget" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="Wallet" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="favorites" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+            <TabsTrigger value="favorites" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="Heart" className="w-3 h-3" />
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-[10px] data-[state=active]:bg-orange-100 data-[state=active]:text-orange-900 px-1">
+            <TabsTrigger value="settings" className="text-[10px] data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-lg data-[state=active]:shadow-lg transition-all px-1">
               <Icon name="Settings" className="w-3 h-3" />
             </TabsTrigger>
           </TabsList>

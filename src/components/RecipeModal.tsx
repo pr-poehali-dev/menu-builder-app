@@ -60,37 +60,42 @@ const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily, onAddToCalend
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end justify-center z-50 animate-fade-in"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end justify-center z-50 animate-fade-in"
       onClick={onClose}
     >
       <Card
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl animate-scale-in border-t-4 border-orange-400"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-t-3xl animate-scale-in border-0 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-t-3xl z-10">
-          <div className="relative h-40 flex items-center justify-center">
-            <span className="text-8xl drop-shadow-lg">{getRecipeImage(recipe.id)}</span>
+        <div className="sticky top-0 bg-white rounded-t-3xl z-10">
+          <div className="relative h-64 overflow-hidden rounded-t-3xl">
+            <img 
+              src={getRecipeImage(recipe.id)} 
+              alt={recipe.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 text-white hover:bg-white/20 backdrop-blur-sm"
+              className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full shadow-lg border-0"
               onClick={onClose}
             >
-              <Icon name="X" className="w-5 h-5" />
+              <Icon name="X" className="w-5 h-5 text-gray-900" />
             </Button>
           </div>
-          <div className="px-6 pb-4">
-            <h2 className="font-heading font-bold text-2xl mb-2">{recipe.name}</h2>
+          <div className="px-6 py-4">
+            <h2 className="font-heading font-extrabold text-2xl mb-3 text-gray-900">{recipe.name}</h2>
             <div className="flex gap-2 flex-wrap">
-              <Badge className="bg-white/25 text-white border-0 backdrop-blur-sm">
+              <Badge className="bg-blue-50 text-blue-700 border-0 font-medium rounded-full px-3 py-1">
                 <Icon name="Clock" className="w-3 h-3 mr-1" />
                 {recipe.time} мин
               </Badge>
-              <Badge className="bg-white/25 text-white border-0 backdrop-blur-sm">
+              <Badge className="bg-red-50 text-red-700 border-0 font-medium rounded-full px-3 py-1">
                 🔥 {recipe.calories} ккал
               </Badge>
               {recipe.regional && (
-                <Badge className="bg-white/25 text-white border-0 backdrop-blur-sm">
+                <Badge className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0 font-medium rounded-full px-3 py-1">
                   <Icon name="MapPin" className="w-3 h-3 mr-1" />
                   {recipe.regional}
                 </Badge>
