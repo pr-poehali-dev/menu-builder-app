@@ -5,22 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { recipes, type Recipe } from '@/lib/recipes-data';
+import { ingredientsPrices, regions, type Region } from '@/lib/ingredients-data';
 
-type Ingredient = {
+type UserIngredient = {
   id: string;
   name: string;
-  calories: number;
-  protein: number;
-  fats: number;
-  carbs: number;
+  price: number;
 };
 
 type SortOption = 'price' | 'simplicity' | 'calories';
 
 const Index = () => {
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [region, setRegion] = useState<Region>('moscow');
+  const [ingredients, setIngredients] = useState<UserIngredient[]>([]);
   const [newIngredient, setNewIngredient] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('simplicity');
@@ -32,13 +32,16 @@ const Index = () => {
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
-      const ingredient: Ingredient = {
+      const ingredientName = newIngredient.toLowerCase().trim();
+      const priceData = ingredientsPrices.find(p => 
+        p.name.toLowerCase().includes(ingredientName) || 
+        ingredientName.includes(p.name.toLowerCase())
+      );
+      
+      const ingredient: UserIngredient = {
         id: Date.now().toString(),
         name: newIngredient,
-        calories: Math.floor(Math.random() * 300) + 50,
-        protein: Math.floor(Math.random() * 30) + 5,
-        fats: Math.floor(Math.random() * 20) + 2,
-        carbs: Math.floor(Math.random() * 50) + 10,
+        price: priceData ? priceData.prices[region] : 0,
       };
       setIngredients([...ingredients, ingredient]);
       setNewIngredient('');
@@ -71,25 +74,42 @@ const Index = () => {
     setDailyCarbs(0);
   };
 
+  const getRecipeMatchScore = (recipe: Recipe): { full: boolean; partial: number } => {
+    if (ingredients.length === 0) return { full: false, partial: 0 };
+    
+    let matchCount = 0;
+    for (const recipeIng of recipe.ingredients) {
+      const found = ingredients.some(userIng =>
+        userIng.name.toLowerCase().includes(recipeIng.toLowerCase()) ||
+        recipeIng.toLowerCase().includes(userIng.name.toLowerCase())
+      );
+      if (found) matchCount++;
+    }
+    
+    const full = matchCount === recipe.ingredients.length;
+    return { full, partial: matchCount };
+  };
+
   const sortedRecipes = [...recipes].sort((a, b) => {
     if (sortBy === 'price') return a.price - b.price;
     if (sortBy === 'simplicity') return a.complexity - b.complexity;
     return a.calories - b.calories;
   });
 
-  const availableRecipes = sortedRecipes.filter(recipe =>
-    recipe.ingredients.some(recipeIng =>
-      ingredients.some(userIng =>
-        userIng.name.toLowerCase().includes(recipeIng.toLowerCase()) ||
-        recipeIng.toLowerCase().includes(userIng.name.toLowerCase())
-      )
-    )
-  );
+  const fullMatchRecipes = sortedRecipes.filter(r => getRecipeMatchScore(r).full);
+  const partialMatchRecipes = sortedRecipes.filter(r => {
+    const score = getRecipeMatchScore(r);
+    return !score.full && score.partial > 0;
+  }).sort((a, b) => getRecipeMatchScore(b).partial - getRecipeMatchScore(a).partial);
 
   const dailyCaloriesGoal = 2000;
   const dailyProteinGoal = 150;
   const dailyFatsGoal = 70;
   const dailyCarbsGoal = 250;
+
+  const getTotalPrice = () => {
+    return ingredients.reduce((sum, ing) => sum + ing.price, 0);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -100,6 +120,25 @@ const Index = () => {
           </h1>
           <p className="text-muted-foreground">Твой персональный помощник</p>
         </div>
+
+        <Card className="mb-4 p-4 bg-white/90 backdrop-blur-sm animate-scale-in">
+          <div className="flex items-center gap-3">
+            <Icon name="MapPin" className="w-5 h-5 text-primary" />
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground mb-1">Ваш регион</p>
+              <Select value={region} onValueChange={(v) => setRegion(v as Region)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(regions).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
 
         <Tabs defaultValue="ingredients" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
@@ -123,7 +162,7 @@ const Index = () => {
 
           <TabsContent value="ingredients" className="space-y-3">
             <Card className="p-4 bg-white/90 backdrop-blur-sm animate-scale-in">
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-3">
                 <Input
                   placeholder="Добавить ингредиент..."
                   value={newIngredient}
@@ -135,6 +174,14 @@ const Index = () => {
                   <Icon name="Plus" className="w-4 h-4" />
                 </Button>
               </div>
+              {ingredients.length > 0 && (
+                <div className="pt-3 border-t">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Общая стоимость:</span>
+                    <span className="text-lg font-bold text-primary">{getTotalPrice()} ₽</span>
+                  </div>
+                </div>
+              )}
             </Card>
 
             <div className="space-y-2">
@@ -149,12 +196,11 @@ const Index = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold capitalize">{ing.name}</h3>
-                        <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                          <span>🔥 {ing.calories} ккал</span>
-                          <span>П: {ing.protein}г</span>
-                          <span>Ж: {ing.fats}г</span>
-                          <span>У: {ing.carbs}г</span>
-                        </div>
+                        {ing.price > 0 && (
+                          <p className="text-sm text-primary font-medium mt-1">
+                            ~{ing.price} ₽
+                          </p>
+                        )}
                       </div>
                       <Button
                         variant="ghost"
@@ -204,53 +250,72 @@ const Index = () => {
               </div>
             </Card>
 
-            <div className="space-y-2">
-              {(availableRecipes.length > 0 ? availableRecipes : sortedRecipes).map((recipe) => (
-                <Card
-                  key={recipe.id}
-                  className="p-4 bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() => setSelectedRecipe(recipe)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-heading font-semibold text-lg">{recipe.name}</h3>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(recipe.id);
-                          }}
-                        >
-                          <Icon
-                            name="Heart"
-                            className={`w-4 h-4 ${favorites.includes(recipe.id) ? 'fill-red-500 text-red-500' : ''}`}
-                          />
-                        </Button>
-                      </div>
-                      <div className="flex gap-2 flex-wrap mb-2">
-                        <Badge variant="secondary" className="text-xs">
-                          <Icon name="Clock" className="w-3 h-3 mr-1" />
-                          {recipe.time} мин
+            {ingredients.length > 0 && fullMatchRecipes.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-2">
+                  <Icon name="CheckCircle2" className="w-5 h-5 text-green-600" />
+                  <h3 className="font-heading font-semibold text-lg text-green-700">
+                    Можно приготовить сейчас
+                  </h3>
+                </div>
+                {fullMatchRecipes.map((recipe) => (
+                  <RecipeCard 
+                    key={recipe.id} 
+                    recipe={recipe} 
+                    onClick={setSelectedRecipe}
+                    onFavorite={toggleFavorite}
+                    isFavorite={favorites.includes(recipe.id)}
+                    matchBadge={<Badge className="bg-green-500 text-white border-0">Все есть!</Badge>}
+                  />
+                ))}
+              </div>
+            )}
+
+            {ingredients.length > 0 && partialMatchRecipes.length > 0 && (
+              <div className="space-y-2 mt-4">
+                <div className="flex items-center gap-2 px-2">
+                  <Icon name="Sparkles" className="w-5 h-5 text-orange-600" />
+                  <h3 className="font-heading font-semibold text-lg text-orange-700">
+                    Почти готово
+                  </h3>
+                </div>
+                {partialMatchRecipes.map((recipe) => {
+                  const score = getRecipeMatchScore(recipe);
+                  return (
+                    <RecipeCard 
+                      key={recipe.id} 
+                      recipe={recipe} 
+                      onClick={setSelectedRecipe}
+                      onFavorite={toggleFavorite}
+                      isFavorite={favorites.includes(recipe.id)}
+                      matchBadge={
+                        <Badge variant="outline" className="border-orange-400 text-orange-600">
+                          {score.partial}/{recipe.ingredients.length} есть
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          💰 {recipe.price}/5
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          ⚡ {recipe.complexity}/5
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          🔥 {recipe.calories} ккал
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{recipe.description}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {ingredients.length === 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 px-2">
+                  <Icon name="List" className="w-5 h-5 text-primary" />
+                  <h3 className="font-heading font-semibold text-lg">Все рецепты</h3>
+                </div>
+                {sortedRecipes.map((recipe) => (
+                  <RecipeCard 
+                    key={recipe.id} 
+                    recipe={recipe} 
+                    onClick={setSelectedRecipe}
+                    onFavorite={toggleFavorite}
+                    isFavorite={favorites.includes(recipe.id)}
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="calories" className="space-y-3">
@@ -336,39 +401,13 @@ const Index = () => {
               recipes
                 .filter((r) => favorites.includes(r.id))
                 .map((recipe) => (
-                  <Card
-                    key={recipe.id}
-                    className="p-4 bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all cursor-pointer"
-                    onClick={() => setSelectedRecipe(recipe)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-heading font-semibold text-lg">{recipe.name}</h3>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFavorite(recipe.id);
-                            }}
-                          >
-                            <Icon name="Heart" className="w-4 h-4 fill-red-500 text-red-500" />
-                          </Button>
-                        </div>
-                        <div className="flex gap-2 flex-wrap mb-2">
-                          <Badge variant="secondary" className="text-xs">
-                            <Icon name="Clock" className="w-3 h-3 mr-1" />
-                            {recipe.time} мин
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            🔥 {recipe.calories} ккал
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
+                  <RecipeCard 
+                    key={recipe.id} 
+                    recipe={recipe} 
+                    onClick={setSelectedRecipe}
+                    onFavorite={toggleFavorite}
+                    isFavorite={true}
+                  />
                 ))
             )}
           </TabsContent>
@@ -384,7 +423,7 @@ const Index = () => {
             className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-gradient-to-r from-primary to-secondary text-white p-6 rounded-t-3xl">
+            <div className="sticky top-0 bg-gradient-to-r from-primary to-secondary text-white p-6 rounded-t-3xl z-10">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h2 className="font-heading font-bold text-2xl mb-2">{selectedRecipe.name}</h2>
@@ -418,12 +457,19 @@ const Index = () => {
               <div>
                 <h3 className="font-heading font-semibold text-lg mb-3">Ингредиенты</h3>
                 <ul className="space-y-2">
-                  {selectedRecipe.ingredients.map((ing, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm">
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                      {ing}
-                    </li>
-                  ))}
+                  {selectedRecipe.ingredients.map((ing, idx) => {
+                    const hasIngredient = ingredients.some(userIng =>
+                      userIng.name.toLowerCase().includes(ing.toLowerCase()) ||
+                      ing.toLowerCase().includes(userIng.name.toLowerCase())
+                    );
+                    return (
+                      <li key={idx} className="flex items-center gap-2 text-sm">
+                        <div className={`w-1.5 h-1.5 rounded-full ${hasIngredient ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className={hasIngredient ? 'text-green-700 font-medium' : ''}>{ing}</span>
+                        {hasIngredient && <Icon name="Check" className="w-3 h-3 text-green-600 ml-auto" />}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
 
@@ -480,5 +526,59 @@ const Index = () => {
     </div>
   );
 };
+
+type RecipeCardProps = {
+  recipe: Recipe;
+  onClick: (recipe: Recipe) => void;
+  onFavorite: (id: string) => void;
+  isFavorite: boolean;
+  matchBadge?: React.ReactNode;
+};
+
+const RecipeCard = ({ recipe, onClick, onFavorite, isFavorite, matchBadge }: RecipeCardProps) => (
+  <Card
+    className="p-4 bg-white/90 backdrop-blur-sm hover:shadow-lg transition-all cursor-pointer"
+    onClick={() => onClick(recipe)}
+  >
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <h3 className="font-heading font-semibold text-lg">{recipe.name}</h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavorite(recipe.id);
+            }}
+          >
+            <Icon
+              name="Heart"
+              className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`}
+            />
+          </Button>
+        </div>
+        <div className="flex gap-2 flex-wrap mb-2">
+          {matchBadge}
+          <Badge variant="secondary" className="text-xs">
+            <Icon name="Clock" className="w-3 h-3 mr-1" />
+            {recipe.time} мин
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            💰 {recipe.price}/5
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            ⚡ {recipe.complexity}/5
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            🔥 {recipe.calories} ккал
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2">{recipe.description}</p>
+      </div>
+    </div>
+  </Card>
+);
 
 export default Index;
