@@ -15,6 +15,7 @@ type UserIngredient = {
   id: string;
   name: string;
   price: number;
+  unit: string;
 };
 
 type SortOption = 'price' | 'simplicity' | 'calories';
@@ -45,6 +46,7 @@ const Index = () => {
         id: Date.now().toString(),
         name: newIngredient,
         price: priceData ? priceData.prices[region] : 0,
+        unit: priceData ? priceData.unit : '',
       };
       setIngredients([...ingredients, ingredient]);
       setNewIngredient('');
@@ -201,6 +203,7 @@ const Index = () => {
               addIngredient={addIngredient}
               removeIngredient={removeIngredient}
               getTotalPrice={getTotalPrice}
+              region={region}
             />
           </TabsContent>
 
