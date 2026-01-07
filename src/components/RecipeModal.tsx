@@ -29,28 +29,39 @@ const RecipeModal = ({ recipe, ingredients, onClose, onAddToDaily }: RecipeModal
         className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-gradient-to-r from-primary to-secondary text-white p-6 rounded-t-3xl z-10">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="font-heading font-bold text-2xl mb-2">{recipe.name}</h2>
-              <div className="flex gap-2 flex-wrap">
-                <Badge className="bg-white/20 text-white border-0">
-                  <Icon name="Clock" className="w-3 h-3 mr-1" />
-                  {recipe.time} мин
-                </Badge>
-                <Badge className="bg-white/20 text-white border-0">
-                  🔥 {recipe.calories} ккал
-                </Badge>
-              </div>
-            </div>
+        <div className="relative">
+          <img
+            src={recipe.image}
+            alt={recipe.name}
+            className="w-full h-48 object-cover rounded-t-3xl"
+            onError={(e) => {
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800';
+            }}
+          />
+          <div className="absolute top-4 right-4">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="bg-white/90 hover:bg-white text-gray-900 rounded-full"
               onClick={onClose}
             >
               <Icon name="X" className="w-5 h-5" />
             </Button>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+            <h2 className="font-heading font-bold text-2xl text-white mb-2">{recipe.name}</h2>
+            <div className="flex gap-2 flex-wrap">
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                <Icon name="Clock" className="w-3 h-3 mr-1" />
+                {recipe.time} мин
+              </Badge>
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                🔥 {recipe.calories} ккал
+              </Badge>
+              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                💰 {recipe.price}/5
+              </Badge>
+            </div>
           </div>
         </div>
 

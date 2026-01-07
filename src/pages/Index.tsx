@@ -32,6 +32,9 @@ const Index = () => {
   const [dailyCarbs, setDailyCarbs] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<RecipeCategory | 'все'>('все');
+  const [maxTime, setMaxTime] = useState<number>(180);
+  const [maxPrice, setMaxPrice] = useState<number>(5);
+  const [maxComplexity, setMaxComplexity] = useState<number>(5);
 
   const addIngredient = () => {
     if (newIngredient.trim()) {
@@ -109,8 +112,14 @@ const Index = () => {
       );
     }
     
+    filtered = filtered.filter(r => 
+      r.time <= maxTime &&
+      r.price <= maxPrice &&
+      r.complexity <= maxComplexity
+    );
+    
     return filtered;
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, maxTime, maxPrice, maxComplexity]);
 
   const sortedRecipes = useMemo(() => {
     return [...filteredRecipes].sort((a, b) => {
@@ -220,6 +229,12 @@ const Index = () => {
               setSearchQuery={setSearchQuery}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
+              maxTime={maxTime}
+              setMaxTime={setMaxTime}
+              maxPrice={maxPrice}
+              setMaxPrice={setMaxPrice}
+              maxComplexity={maxComplexity}
+              setMaxComplexity={setMaxComplexity}
             />
           </TabsContent>
 
